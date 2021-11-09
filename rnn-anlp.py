@@ -18,7 +18,7 @@ normalized_salaries = []
 words_train = set()
 max_sentence_size = 0 
 
-counter = 5000
+counter = 4000
 
 with open('./data/Train_rev1.csv', newline='', encoding="utf8") as csvfile:
     spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
@@ -63,6 +63,7 @@ min_salary = min(normalized_salaries)
 diff = max_salary - min_salary
 
 normalized_salaries = [ (salary - min_salary) / diff for salary in normalized_salaries]
+#normalized_salaries = [ ((salary - min_salary) * 2.0 / diff ) - 1 for salary in normalized_salaries]
 
 train_y = np.array(normalized_salaries)
 
@@ -110,7 +111,7 @@ criterion = nn.MSELoss()
 l1_loss = nn.L1Loss()
 optimizer = torch.optim.Adam(net.parameters(), lr=lr)
 
-epochs = 50
+epochs = 150
 clip=5 # gradient clipping
 
 train_accuracy = []
@@ -175,6 +176,7 @@ for test_inputs, test_labels in test_loader:
     loss = l1_loss(output.squeeze(), test_labels.float().cuda())
     total_error += loss.item()
 
-avg_test_accuracy = total_error * diff / len(test_loader)
+avg_test_accuracy = total_error * diff / (len(test_loader))
+#avg_test_accuracy = total_error * diff / (2.0 * len(test_loader))
 
 print("Test Accuracy: {:.6f}...".format(avg_test_accuracy))

@@ -21,7 +21,8 @@ class LSTM(nn.Module):
         
         # linear and sigmoid layers
         self.fc = nn.Linear(hidden_dim, output_size).cuda()
-        self.sigm = nn.Sigmoid()        
+        self.sigm = nn.Sigmoid()      
+        #self.sigm = nn.Tanh()  
 
     def forward(self, x, hidden):
   
