@@ -38,6 +38,17 @@ with open('./data/Train_rev1.csv', newline='', encoding="utf8") as csvfile:
 
 csvfile.close()
 
+embedding_map = {}
+
+#fetching the pretrained embeddings from the file and storing it in a embedding dictionary
+#https://nlp.stanford.edu/data/glove.6B.zip Download the zip and extract it in the data folder and rename the 100 dimension file to glove.txt
+f = open('./data/glove.txt')
+for line in f.readlines():
+    tokens = re.split('\s+',line)
+    if(len(tokens)>2):
+        key = tokens[0]
+        embedding_map[key] = [float(x) for x in tokens[1:len(tokens)-1]]
+
 #converting the words into indices
 vocab_to_int_train = {}
 counter = 1
@@ -103,7 +114,24 @@ embedding_dim = 100
 hidden_dim = 100
 n_layers = 3
 
-net = LSTM(vocab_size, output_size, embedding_dim, hidden_dim, n_layers, None)
+weights_matrix = np.zeros((vocab_size, embedding_dim))
+
+#converting the embedding dictionary into a matrix
+for key in vocab_to_int_train.keys():
+    try:
+        weights_matrix[vocab_to_int_train[key]] = embedding_map[key]
+    except KeyError:
+        weights_matrix[vocab_to_int_train[key]] = np.random.normal(scale=0.6, size=(embedding_dim, ))
+
+weights_matrix[0] = np.random.normal(scale=0.6, size=(embedding_dim, ))
+weights_matrix[vocab_size-1] = np.random.normal(scale=0.6, size=(embedding_dim, ))
+emb_layer = nn.Embedding(vocab_size, embedding_dim)
+emb_layer.weight=nn.Parameter(torch.tensor(weights_matrix,dtype=torch.float32))
+emb_layer = emb_layer.cuda()
+
+#net = LSTM(vocab_size, output_size, embedding_dim, hidden_dim, n_layers, None)
+net = LSTM(vocab_size, output_size, embedding_dim, hidden_dim, n_layers, emb_layer)
+
 
 lr=0.001
 
